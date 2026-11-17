@@ -61,7 +61,7 @@ export function TopBar() {
             aria-modal="true"
             aria-labelledby="about-title"
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg rounded-2xl border border-accent/40 bg-background/85 p-8 shadow-2xl"
+            className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-accent/40 bg-background/85 p-8 shadow-2xl"
           >
             <button
               type="button"
@@ -74,14 +74,37 @@ export function TopBar() {
             <h2 id="about-title" className="mb-4 text-2xl font-semibold">
               About <span className="text-accent">ZenMode</span>
             </h2>
-            <p className="leading-7 text-muted">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat
-              nulla pariatur.
-            </p>
+            <div className="space-y-4 leading-7 text-muted">
+              <p>
+                Paste any URL and ZenMode fetches the live page through
+                ZenRows, which handles the hard part: JavaScript rendering,
+                rotating proxies, and anti-bot defenses like Cloudflare and
+                DataDome. The page comes back as clean markdown, ready for a
+                model to read.
+              </p>
+              <p>
+                Claude then turns that page into a short brief: the key points
+                and the facts that matter.
+              </p>
+              <p>
+                Try the toggle. With ZenRows off, ZenMode makes a plain
+                request, the way a basic script would, and protected sites
+                block it. Turn ZenRows on and the same request gets through.
+              </p>
+            </div>
+            <h3 className="mt-6 mb-3 font-semibold text-foreground">
+              How it works
+            </h3>
+            <ol className="list-decimal space-y-1 pl-5 leading-7 text-muted marker:text-accent">
+              <li>You enter a URL.</li>
+              <li>
+                A server route calls the ZenRows Universal Scraper API (or a
+                plain fetch, if the toggle is off).
+              </li>
+              <li>The page comes back as markdown.</li>
+              <li>Claude summarizes it.</li>
+              <li>You see both side by side.</li>
+            </ol>
           </div>
         </div>
       )}
