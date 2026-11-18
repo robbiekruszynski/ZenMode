@@ -1,5 +1,5 @@
 export type BriefResult = {
-  outcome: "blocked" | "zenrows" | "direct" | "error";
+  outcome: "blocked" | "zenrows" | "direct" | "slow" | "error";
   message: string;
   httpStatus?: number;
   content?: string;
@@ -75,7 +75,7 @@ async function fetchDirect(target: string): Promise<BriefResult> {
     return {
       outcome: "direct",
       httpStatus: res.status,
-      message: "Got through without ZenRows — this site isn't blocking scrapers",
+      message: "Got through without ZenRows. This site isn't blocking scrapers",
       content,
     };
   } catch (err) {
@@ -100,25 +100,50 @@ async function fetchWithZenRows(target: string): Promise<BriefResult> {
     response_type: "markdown",
   });
 
+  // ZenRows recommends a client timeout of at least 3 minutes for js_render + premium_proxy.
+  const deadline = AbortSignal.timeout(180_000);
+  const startedAt = Date.now();
+  const slow: BriefResult = {
+    outcome: "slow",
+    message: "ZenRows is still working through this site’s bot protection. Try again in a minute.",
+  };
+
   try {
-    const res = await fetch(`https://api.zenrows.com/v1/?${params}`, {
-      signal: AbortSignal.timeout(90_000),
-    });
-    const text = await res.text();
-    if (!res.ok) {
+    for (let attempt = 1; ; attempt++) {
+      const res = await fetch(`https://api.zenrows.com/v1/?${params}`, { signal: deadline });
+      const text = await res.text();
+      if (res.ok && text.trim()) {
+        return {
+          outcome: "zenrows",
+          httpStatus: res.status,
+          message: "Got through with ZenRows",
+          content: text.trim(),
+        };
+      }
+
+      // 504 / CTX0002 means ZenRows hit its own time limit, and a 200 with an empty body means
+      // the page hadn't rendered yet; a fresh attempt often succeeds in both cases.
+      const emptyPage = res.ok;
+      const zenRowsTimedOut = res.status === 504 || text.includes("CTX0002");
+      const retryable = emptyPage || zenRowsTimedOut;
+      if (retryable && attempt === 1 && Date.now() - startedAt < 90_000) continue;
+      if (emptyPage) {
+        return {
+          outcome: "slow",
+          httpStatus: res.status,
+          message: "ZenRows got through, but the page came back empty. Try again.",
+        };
+      }
+      if (zenRowsTimedOut) return { ...slow, httpStatus: res.status };
+
       return {
         outcome: "error",
         httpStatus: res.status,
         message: `ZenRows couldn't fetch it (${res.status})${zenRowsErrorDetail(text)}`,
       };
     }
-    return {
-      outcome: "zenrows",
-      httpStatus: res.status,
-      message: "Got through with ZenRows",
-      content: text.trim(),
-    };
   } catch (err) {
+    if (err instanceof Error && err.name === "TimeoutError") return slow;
     return { outcome: "error", message: `ZenRows request failed (${errorReason(err)})` };
   }
 }
@@ -146,7 +171,7 @@ async function summarize(
         messages: [
           {
             role: "user",
-            content: `Here is the content of ${target}:\n\n<page>\n${content.slice(0, MAX_SUMMARY_INPUT_CHARS)}\n</page>\n\nWrite a short brief of this page: a two-sentence overview, then 3-5 bullet points with the key takeaways. Plain text only: no headings, no bold, no markdown except "-" for bullets.`,
+            content: `Here is the content of ${target}:\n\n<page>\n${content.slice(0, MAX_SUMMARY_INPUT_CHARS)}\n</page>\n\nWrite a short brief of this page: a two-sentence overview, then 3-5 bullet points with the key takeaways. Plain text only: no headings, no bold, no markdown except "-" for bullets. Do not use em dashes.`,
           },
         ],
       }),
@@ -162,6 +187,7 @@ async function summarize(
       .join("\n")
       .replace(/^#{1,6}\s+/gm, "")
       .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\s*—\s*/g, ", ")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
     return { summary };

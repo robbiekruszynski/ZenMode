@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { BriefResult } from "./api/brief/route";
 
 export function Brief() {
   const [url, setUrl] = useState("");
   const [useZenRows, setUseZenRows] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [runUsesZenRows, setRunUsesZenRows] = useState(false);
   const [result, setResult] = useState<BriefResult | null>(null);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!url.trim() || loading) return;
     setLoading(true);
+    setRunUsesZenRows(useZenRows);
     setResult(null);
     try {
       const res = await fetch("/api/brief", {
@@ -69,10 +71,11 @@ export function Brief() {
           disabled={loading || !url.trim()}
           className="h-12 shrink-0 rounded-full bg-accent px-8 font-medium text-accent-foreground transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "Getting brief…" : "Get brief"}
+          {loading ? "Distilling…" : "Distill"}
         </button>
       </form>
 
+      {loading && <ProgressBanner usesZenRows={runUsesZenRows} />}
       {result && <StatusBanner result={result} />}
 
       <section className="grid w-full flex-1 grid-cols-1 gap-4 md:grid-cols-2">
@@ -92,7 +95,7 @@ export function Brief() {
           title="Claude's summary"
           loading={loading}
           hasContent={!!(result?.summary || result?.summaryError)}
-          empty="Claude's brief will appear here"
+          empty="Claude's summary will appear here"
         >
           {result?.summary && (
             <p className="leading-7 whitespace-pre-wrap">{result.summary}</p>
@@ -104,21 +107,44 @@ export function Brief() {
   );
 }
 
-function StatusBanner({ result }: { result: BriefResult }) {
-  const styles =
-    result.outcome === "zenrows"
-      ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-500"
-      : result.outcome === "direct"
-        ? "border-amber-500/50 bg-amber-500/15 text-amber-500"
-        : "border-red-500/50 bg-red-500/15 text-red-500";
-  const icon = result.outcome === "zenrows" ? "✓" : result.outcome === "direct" ? "!" : "✕";
+function ProgressBanner({ usesZenRows }: { usesZenRows: boolean }) {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div
       role="status"
-      className={`flex w-full items-center justify-center gap-3 rounded-xl border px-5 py-3 text-lg font-semibold ${styles}`}
+      className="flex w-full flex-col items-center gap-1 rounded-xl border border-accent/50 bg-accent/10 px-5 py-3 text-center text-accent"
     >
-      <span aria-hidden>{icon}</span>
+      <p className="flex items-center gap-3 text-lg font-semibold">
+        <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-accent" aria-hidden />
+        {usesZenRows ? "Fetching through ZenRows" : "Sending a plain request"} · {seconds}s
+      </p>
+      {usesZenRows && seconds >= 20 && (
+        <p className="text-sm text-muted">
+          Getting past this site’s bot protection can take a minute or two.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function StatusBanner({ result }: { result: BriefResult }) {
+  const styles =
+    result.outcome === "zenrows"
+      ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-500"
+      : result.outcome === "direct" || result.outcome === "slow"
+        ? "border-amber-500/50 bg-amber-500/15 text-amber-500"
+        : "border-red-500/50 bg-red-500/15 text-red-500";
+  return (
+    <div
+      role="status"
+      className={`flex w-full items-center justify-center gap-3 rounded-xl border px-5 py-3 text-center text-lg font-semibold ${styles}`}
+    >
       {result.message}
     </div>
   );
