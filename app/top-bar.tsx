@@ -71,21 +71,22 @@ export function TopBar() {
             >
               ✕
             </button>
-            <h2 id="about-title" className="mb-4 text-2xl font-semibold">
-              About <span className="text-accent">ZenMode</span>
+            <h2 id="about-title" className="zen-title mb-6 py-1 text-center text-3xl">
+              About
             </h2>
             <div className="space-y-4 leading-7 text-muted">
               <p>
                 Paste any URL and ZenMode fetches the live page through
                 ZenRows. ZenRows renders the JavaScript, rotates proxies, and
                 gets past anti-bot systems like Cloudflare and DataDome. What
-                comes back is clean markdown that any LLM can read.
+                comes back is clean markdown, ready for an LLM to read.
               </p>
               <p>
                 This demo uses Claude to turn that markdown into a short brief,
-                but you could swap in GPT, Gemini, or whatever model your stack
-                already uses. ZenRows doesn’t care which one is on the other
-                end.
+                but the output works with any LLM. ZenRows has official
+                integrations for Claude and OpenAI, plus frameworks like
+                LangChain, LlamaIndex, CrewAI and the Vercel AI SDK, so it fits
+                whatever stack you already use.
               </p>
               <p>
                 Try the toggle. With ZenRows off, ZenMode sends a plain request
@@ -103,7 +104,7 @@ export function TopBar() {
                 plain fetch if the toggle is off.
               </li>
               <li>ZenRows returns the page as markdown.</li>
-              <li>An LLM (Claude, in this demo) summarizes it.</li>
+              <li>Claude summarizes it. Any LLM would work here.</li>
               <li>You see both side by side.</li>
             </ol>
           </div>

@@ -69,7 +69,13 @@ export function Brief() {
         <button
           type="submit"
           disabled={loading || !url.trim()}
-          className="h-12 shrink-0 rounded-full bg-accent px-8 font-medium text-accent-foreground transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-12 shrink-0 items-center rounded-full bg-accent px-7 text-accent-foreground transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            fontFamily: "var(--font-syncopate), sans-serif",
+            fontWeight: 700,
+            fontSize: "0.8rem",
+            letterSpacing: "0.06em",
+          }}
         >
           {loading ? "Distilling…" : "Distill"}
         </button>
