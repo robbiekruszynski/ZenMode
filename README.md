@@ -1,4 +1,9 @@
-# ZenMode
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/zenmode-title-dark.png">
+    <img alt="ZenMode" src="docs/zenmode-title-light.png" width="532">
+  </picture>
+</p>
 
 ZenMode is a small demo that shows why a scraping API matters. You paste a URL, ZenMode fetches the page, and Claude writes a short summary of it.
 
@@ -62,7 +67,7 @@ Runs through ZenRows usually take 5 to 40 seconds. Getting past a strict bot che
 The browser sends the URL and the toggle state to `POST /api/brief`. That route:
 
 1. Fetches the page directly, or through ZenRows if the toggle is on.
-2. Sends the page text to Claude and asks for a two-sentence overview and a few key points.
+2. Sends the page text to Claude for an overview / summary.
 3. Returns the outcome, the page content and the summary as JSON.
 
 Some details worth knowing:

@@ -77,19 +77,20 @@ export function TopBar() {
             <div className="space-y-4 leading-7 text-muted">
               <p>
                 Paste any URL and ZenMode fetches the live page through
-                ZenRows, which handles the hard part: JavaScript rendering,
-                rotating proxies, and anti-bot defenses like Cloudflare and
-                DataDome. The page comes back as clean markdown, ready for a
-                model to read.
+                ZenRows. ZenRows renders the JavaScript, rotates proxies, and
+                gets past anti-bot systems like Cloudflare and DataDome. What
+                comes back is clean markdown that any LLM can read.
               </p>
               <p>
-                Claude then turns that page into a short brief: the key points
-                and the facts that matter.
+                This demo uses Claude to turn that markdown into a short brief,
+                but you could swap in GPT, Gemini, or whatever model your stack
+                already uses. ZenRows doesn’t care which one is on the other
+                end.
               </p>
               <p>
-                Try the toggle. With ZenRows off, ZenMode makes a plain
-                request, the way a basic script would, and protected sites
-                block it. Turn ZenRows on and the same request gets through.
+                Try the toggle. With ZenRows off, ZenMode sends a plain request
+                like a basic script would, and protected sites block it. Turn
+                ZenRows on and the same request gets through.
               </p>
             </div>
             <h3 className="mt-6 mb-3 font-semibold text-foreground">
@@ -98,11 +99,11 @@ export function TopBar() {
             <ol className="list-decimal space-y-1 pl-5 leading-7 text-muted marker:text-accent">
               <li>You enter a URL.</li>
               <li>
-                A server route calls the ZenRows Universal Scraper API (or a
-                plain fetch, if the toggle is off).
+                A server route calls the ZenRows Universal Scraper API, or a
+                plain fetch if the toggle is off.
               </li>
-              <li>The page comes back as markdown.</li>
-              <li>Claude summarizes it.</li>
+              <li>ZenRows returns the page as markdown.</li>
+              <li>An LLM (Claude, in this demo) summarizes it.</li>
               <li>You see both side by side.</li>
             </ol>
           </div>
